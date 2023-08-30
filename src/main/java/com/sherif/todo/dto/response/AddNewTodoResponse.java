@@ -6,7 +6,6 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Builder
 public class AddNewTodoResponse {
     private String message;
 }

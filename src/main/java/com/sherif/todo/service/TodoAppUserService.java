@@ -1,5 +1,6 @@
 package com.sherif.todo.service;
 
+import com.sherif.todo.AppUtils.AppUtils;
 import com.sherif.todo.data.model.User;
 import com.sherif.todo.data.repository.UserRepository;
 import com.sherif.todo.dto.request.AddNewTodoRequest;
@@ -9,6 +10,10 @@ import com.sherif.todo.dto.response.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.awt.geom.RectangularShape;
+
+import static com.sherif.todo.AppUtils.EnumResponse.REGISTRATION_SUCCESSFUL;
 
 @Service @AllArgsConstructor
 public class TodoAppUserService implements UserService{
@@ -26,8 +31,12 @@ public class TodoAppUserService implements UserService{
                 .password(password)
                 .build();
 
+        userRepository.save(user);
 
-        return null;
+        RegistrationResponse response = new RegistrationResponse();
+        response.setMessage(REGISTRATION_SUCCESSFUL.name());
+
+        return response;
     }
 
     @Override

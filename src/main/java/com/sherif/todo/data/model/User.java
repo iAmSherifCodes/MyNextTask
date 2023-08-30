@@ -15,6 +15,7 @@ public class User {
     private String name;
     @Column(unique = true, nullable = false)
     private String email;
+    @Column(nullable = false)
     private String password;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Todo> todoList;
