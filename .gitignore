@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### SECRET ###
+
+C:\Users\SHERIF\IdeaProjects\todo\src\main\resources\secret.properties
