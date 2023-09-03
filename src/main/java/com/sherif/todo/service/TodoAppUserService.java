@@ -1,7 +1,15 @@
 package com.sherif.todo.service;
 
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.fge.jackson.jsonpointer.JsonPointer;
+import com.github.fge.jackson.jsonpointer.JsonPointerException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.github.fge.jsonpatch.JsonPatchOperation;
+import com.github.fge.jsonpatch.ReplaceOperation;
 import com.sherif.todo.data.model.Todo;
 import com.sherif.todo.data.model.User;
 import com.sherif.todo.data.repository.TodoRepository;
@@ -13,13 +21,16 @@ import com.sherif.todo.dto.response.*;
 import com.sherif.todo.exceptions.TodoNotFound;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.web.JsonPath;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static com.sherif.todo.AppUtils.EnumResponse.REGISTRATION_SUCCESSFUL;
-import static com.sherif.todo.AppUtils.EnumResponse.TASK_ADDED;
+import static com.sherif.todo.AppUtils.EnumResponse.*;
 
 @Service @AllArgsConstructor @Slf4j
 public class TodoAppUserService implements UserService{
@@ -74,11 +85,13 @@ public class TodoAppUserService implements UserService{
         List<Todo> todos = todoRepository.findAll();
 
         List<TodoResponse> todoResponseList = todos.stream()
-                                                   .map(todo -> TodoResponse
-                                                   .builder()
-                                                   .heading(todo.getHeading())
-                                                   .description(todo.getDescription())
-                                                   .build())
+                                                   .map(todo -> {
+                                                       TodoResponse todoResponse = new TodoResponse();
+                                                       todoResponse.setHeading(todo.getHeading());
+                                                       todoResponse.setDescription(todo.getDescription());
+
+                                                       return todoResponse;
+                                                   })
                                                    .toList();
 
         ViewAllTodoResponse viewAllTodoResponse = new ViewAllTodoResponse();
@@ -90,19 +103,65 @@ public class TodoAppUserService implements UserService{
 
     @Override
     public TodoResponse findTodoByHeading(String heading) {
-        Todo foundTodo = todoRepository.findByHeading(heading).orElseThrow(()->new TodoNotFound("Todo Cannot Be Found"));
+        Todo foundTodo = findTodo(heading);
+        ModelMapper modelMapper = new ModelMapper();
+        TodoResponse newTodo = new TodoResponse();
 
-        TodoResponse newTodo = TodoResponse.builder()
-                .heading(foundTodo.getHeading())
-                .description(foundTodo.getDescription())
-                .build();
+         modelMapper.map(foundTodo, newTodo);
+
+//        TodoResponse newTodo = TodoResponse.builder()
+//                .heading(foundTodo.getHeading())
+//                .description(foundTodo.getDescription())
+//                .build();
 
         return newTodo;
     }
 
-    @Override
-    public UpdateTodoResponse updateTodo(UpdateTodoRequest updateTodoRequest) {
+    private Todo findTodo(String heading){
+        return todoRepository.findByHeading(heading).orElseThrow(()->new TodoNotFound("Todo Cannot Be Found"));
+    }
 
-        return null;
+    @Override
+    public UpdateTodoResponse updateTodo(UpdateTodoRequest updateTodoRequest, String heading) {
+        ObjectMapper mapper = new ObjectMapper();
+        Field[] fields = updateTodoRequest.getClass().getDeclaredFields();
+        List<ReplaceOperation> operations = Arrays.stream(fields).filter(field->{
+            field.setAccessible(true);
+            try {
+                return field.get(updateTodoRequest) != null;
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }).map(field->{
+            try {
+                JsonPointer jsonPointer = new JsonPointer("/"+field.getName());
+                TextNode textNode = new TextNode(field.get(updateTodoRequest).toString());
+                ReplaceOperation replaceOperation = new ReplaceOperation(jsonPointer, textNode);
+                return replaceOperation;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).toList();
+
+        List<JsonPatchOperation> jsonPatchOperations = new ArrayList<>(operations);
+
+        JsonPatch jsonPatch = new JsonPatch(jsonPatchOperations);
+
+        // Get the TodoNote we want to update
+        Todo foundTodo = findTodo(heading);
+
+        JsonNode jsonNode = mapper.convertValue(foundTodo, JsonNode.class);
+        try {
+            JsonNode updatedNode = jsonPatch.apply(jsonNode);
+            Todo updatedTodo = mapper.convertValue(updatedNode, Todo.class);
+            todoRepository.save(updatedTodo);
+            UpdateTodoResponse response = UpdateTodoResponse.builder()
+                                                            .message(UPDATE_SUCCESSFUL.name())
+                                                            .build();
+            return response;
+
+        } catch (JsonPatchException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

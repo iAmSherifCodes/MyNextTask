@@ -9,7 +9,7 @@ public interface UserService {
     RegistrationResponse register (RegistrationRequest request);
     AddNewTodoResponse addNewTodo (AddNewTodoRequest addNewTodoRequest);
     ViewAllTodoResponse viewAllTodo ();
-    TodoResponse findTodoByHeading(String topic);
-    UpdateTodoResponse updateTodo (UpdateTodoRequest updateTodoRequest);
+    TodoResponse findTodoByHeading(String heading);
+    UpdateTodoResponse updateTodo (UpdateTodoRequest updateTodoRequest, String heading);
 
 }

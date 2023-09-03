@@ -7,11 +7,13 @@ import com.sherif.todo.dto.response.AddNewTodoResponse;
 import com.sherif.todo.dto.response.TodoResponse;
 import com.sherif.todo.dto.response.UpdateTodoResponse;
 import com.sherif.todo.dto.response.ViewAllTodoResponse;
+import com.sherif.todo.exceptions.TodoNotFound;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 
@@ -47,7 +49,7 @@ class TodoAppUserServiceTest {
     @Test
     void viewAllTodo() {
         AddNewTodoRequest request = AddNewTodoRequest.builder()
-                .heading("My First Task")
+                .heading("First Task")
                 .description("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
                 .build();
 
@@ -70,18 +72,34 @@ class TodoAppUserServiceTest {
     }
 
     @Test
-    void findTodoByTopic() {
+    void findTodoByHeading() {
         AddNewTodoRequest request = AddNewTodoRequest
                 .builder()
-                .heading("My First Task")
+                .heading("My School Task")
                 .description("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
                 .build();
         AddNewTodoResponse addNewTodoResponse = userService.addNewTodo(request);
         assertThat(addNewTodoResponse).isNotNull();
 
-        String heading = "My First Task";
+        String heading = "My School Task";
         TodoResponse response = userService.findTodoByHeading(heading);
         assertThat(response.getDescription()).isNotNull();
+
+
+    }
+
+    @Test
+    void findTodoByHeadingThrowsTodoNotFoundException(){
+        AddNewTodoRequest newTodoRequest = AddNewTodoRequest.builder()
+                .heading("Research work")
+                .description("Another Lorem, No one knows")
+                .build();
+
+        AddNewTodoResponse response = userService.addNewTodo(newTodoRequest);
+        assertThat(response).isNotNull();
+        String todoRequest = "Research wor";
+
+        assertThatThrownBy(()->userService.findTodoByHeading(todoRequest)).isInstanceOf(TodoNotFound.class);
 
 
     }
@@ -90,22 +108,22 @@ class TodoAppUserServiceTest {
     void updateTodo() {
         AddNewTodoRequest request = AddNewTodoRequest
                 .builder()
-                .heading("My First Task")
+                .heading("Office Task")
                 .description("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
                 .build();
         AddNewTodoResponse addNewTodoResponse = userService.addNewTodo(request);
         assertThat(addNewTodoResponse).isNotNull();
 
-        String heading = "My First Task";
+        String heading = "Office Task";
         TodoResponse foundTodo = userService.findTodoByHeading(heading);
         assertThat(foundTodo).isNotNull();
 
-        String updateHeading = "My Changed Task";
+        String updateHeading = "Office Task Changed";
 
         UpdateTodoRequest updateTodoRequest = new UpdateTodoRequest();
         updateTodoRequest.setHeading(updateHeading);
 
-        UpdateTodoResponse updateTodoResponse = userService.updateTodo(updateTodoRequest);
+        UpdateTodoResponse updateTodoResponse = userService.updateTodo(updateTodoRequest, heading);
         assertThat(updateTodoResponse).isNotNull();
 
         TodoResponse updatedTodo = userService.findTodoByHeading(updateHeading);
