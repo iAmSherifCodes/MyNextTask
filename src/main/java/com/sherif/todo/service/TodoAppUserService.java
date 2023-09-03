@@ -32,6 +32,10 @@ import java.util.List;
 
 import static com.sherif.todo.AppUtils.EnumResponse.*;
 
+//Todo
+// 1- Pagination
+// 2- Refactor this method
+
 @Service @AllArgsConstructor @Slf4j
 public class TodoAppUserService implements UserService{
 
@@ -79,9 +83,6 @@ public class TodoAppUserService implements UserService{
 
     @Override
     public ViewAllTodoResponse viewAllTodo() {
-
-        //Todo
-        // 1- Pagination
         List<Todo> todos = todoRepository.findAll();
 
         List<TodoResponse> todoResponseList = todos.stream()
@@ -123,6 +124,7 @@ public class TodoAppUserService implements UserService{
 
     @Override
     public UpdateTodoResponse updateTodo(UpdateTodoRequest updateTodoRequest, String heading) {
+
         ObjectMapper mapper = new ObjectMapper();
         Field[] fields = updateTodoRequest.getClass().getDeclaredFields();
         List<ReplaceOperation> operations = Arrays.stream(fields).filter(field->{
