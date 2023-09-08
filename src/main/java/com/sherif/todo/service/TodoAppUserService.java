@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
-import com.github.fge.jackson.jsonpointer.JsonPointerException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.JsonPatchOperation;
@@ -24,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +32,7 @@ import static com.sherif.todo.AppUtils.EnumResponse.*;
 
 //Todo
 // 1- Pagination
-// 2- Refactor this method
+// 2- Refactor update method
 
 @Service @AllArgsConstructor @Slf4j
 public class TodoAppUserService implements UserService{
@@ -108,12 +106,7 @@ public class TodoAppUserService implements UserService{
         ModelMapper modelMapper = new ModelMapper();
         TodoResponse newTodo = new TodoResponse();
 
-         modelMapper.map(foundTodo, newTodo);
-
-//        TodoResponse newTodo = TodoResponse.builder()
-//                .heading(foundTodo.getHeading())
-//                .description(foundTodo.getDescription())
-//                .build();
+        modelMapper.map(foundTodo, newTodo);
 
         return newTodo;
     }

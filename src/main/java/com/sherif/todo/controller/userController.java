@@ -41,6 +41,11 @@ public class userController {
         return new ResponseEntity<>(userService.updateTodo(updateTodoRequest, heading), HttpStatus.OK);
     }
 
+    @DeleteMapping("/delete-todo/{heading}")
+    public ResponseEntity<DeleteTodoResponse> deleteTodo(@PathVariable String heading){
+        return new ResponseEntity<>(userService.deleteTodo(heading), HttpStatus.OK);
+    }
+
 
 
 
