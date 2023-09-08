@@ -10,6 +10,7 @@ public interface UserService {
     AddNewTodoResponse addNewTodo (AddNewTodoRequest addNewTodoRequest);
     ViewAllTodoResponse viewAllTodo ();
     TodoResponse findTodoByHeading(String heading);
+    DeleteTodoResponse deleteTodo(String heading);
     UpdateTodoResponse updateTodo (UpdateTodoRequest updateTodoRequest, String heading);
 
 }

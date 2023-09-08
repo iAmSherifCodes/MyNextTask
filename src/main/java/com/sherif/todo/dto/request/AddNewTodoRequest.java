@@ -6,7 +6,6 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Builder
 public class AddNewTodoRequest {
     private String heading;
     private String description;

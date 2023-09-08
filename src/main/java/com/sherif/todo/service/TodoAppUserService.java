@@ -118,6 +118,17 @@ public class TodoAppUserService implements UserService{
         return newTodo;
     }
 
+    @Override
+    public DeleteTodoResponse deleteTodo(String heading) {
+        Todo foundTodo = findTodo(heading);
+
+        todoRepository.delete(foundTodo);
+        DeleteTodoResponse response = new DeleteTodoResponse();
+        response.setMessage(DELETE_SUCCESSFUL.name());
+
+        return response;
+    }
+
     private Todo findTodo(String heading){
         return todoRepository.findByHeading(heading).orElseThrow(()->new TodoNotFound("Todo Cannot Be Found"));
     }
